@@ -1,0 +1,24 @@
+[package]
+name = "crypto_primitives_with_rustcrypto"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+log = "0.4.26"
+chrono = "0.4.40"
+env_logger = "0.11.6"    
+sha2 = { version = "0.10.8", features = ["oid"] }  # hash function
+argon2 = "0.5.3"
+hmac = "0.12.1"       # message authentication 
+aes-gcm = "0.10.3"    # symmetric encryption
+rsa = "0.9.7"          # asymmetric encryption 
+hex = "0.4.3"         # hexadecimal representation
+chacha20poly1305 = "0.10.1"   # symmetric encryption
+ed25519-dalek = { version = "2.1.1", features = ["rand_core"] }
+p256 = { version = "0.13.2", features = ["ecdh"] }
+x25519-dalek = { version = "2.0.1" , features = ["static_secrets"] } 
+num = "0.4.3"
+num-bigint = { version = "0.4.6", features = ["rand"] }
+num-traits = "0.2.19"
+num-integer = "0.1.46"
+rand = "=0.8.5"

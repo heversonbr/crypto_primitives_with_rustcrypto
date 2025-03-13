@@ -1,0 +1,83 @@
+# Cryptography  Primitives with RustCrypto - Short Tutorial
+
+## Introduction
+
+Cryptography is essential for securing data, ensuring integrity, and protecting communications. In this tutorial, we will explore basic cryptographic primitives using RustCrypto. 
+
+RustCrypto is a collection of cryptographic libraries written in the Rust programming language. It provides secure and efficient cryptographic algorithms, protocols, and tools for developers. The libraries within RustCrypto cover various cryptographic primitives such as hashing (e.g., SHA-256), encryption (e.g., AES), digital signatures, key exchange, and more.
+
+In this tutorial will explore practical examples to understand how use some of these primitives.
+
+
+## 1) Hash with SHA-256
+
+Hashing is a one-way function that takes an input and produces a fixed-length output (hash). It is commonly used for checksums, password storage, and data integrity verification.
+
+### How it Works:
+- A hashing algorithm (SHA-256 in this case) takes an input and computes a unique hash.
+- Even a small change in the input drastically changes the hash (avalanche effect).
+- Hashes are deterministic: the same input always results in the same hash.
+
+### Use Cases:
+- Verifying file integrity
+- Password storage (with additional salting)
+- Digital signatures
+
+// template -> link:https://github.com/username/rust-crypto/blob/main/src/key_exchange.rs[Key Exchange Example]
+
+### Example: link:src/hashing.rs[Hash with SHA-256]
+
+## 2) Key Derivation Functions and Password Hashing
+
+### What is a Key Derivation Function (KDF)?
+KDFs enhance password security by making brute-force attacks computationally expensive. Unlike simple hashing, KDFs introduce time and memory costs.
+
+### Differences Between SHA-256 and Argon2:
+| Feature         | SHA-256 | Argon2 |
+|---------------|---------|---------|
+| Speed          | Fast    | Slow (intentionally) |
+| Salted?        | No      | Yes     |
+| Brute-force Resistant? | No | Yes |
+| Use case       | General hashing | Password hashing |
+
+### Use Cases:
+- Storing user passwords securely
+- Generating encryption keys from passwords
+- Preventing brute-force attacks
+
+### Example: ### Example: link:src/password_hashing_with_key_derivation_functions.rs[Key derivation funtions with Argon2]
+
+
+## 3) Message Authentication Using HMAC
+
+### What is HMAC?
+HMAC (Hash-based Message Authentication Code) ensures both the integrity and authenticity of a message using a shared secret key.
+
+### How it Works:
+- The sender computes an HMAC for a message using a secret key.
+- The message and HMAC are sent to the receiver.
+- The receiver recomputes the HMAC using the same key and verifies if it matches the received HMAC.
+
+### Use Cases:
+- API authentication (e.g., signing requests)
+- Data integrity verification
+- Secure message transmission
+
+### Example link:src/message_authentication.rs[HMAC with SHA-256]
+
+
+## 4) Symmetric Encryption: 
+### 4.1) Encryption & authentication with AES-256-GCM
+### 4.2) Encryption & authentication with ChaCha20-Poly1305
+## 5) Asymmetric encryption:
+### 5.1) Asymmetric encryption fo Confidentiality using RSA and OAEP
+### 5.2) Asymmetric encryption for Digital Signatures using RSA and PKCS1-v1_5
+### 5.3) Asymmetric encryption for Digital Signatures using Ed25519
+## 6) Key exchange:
+### 6.1) Key exchange using Diffie-Hellman (DH) Key Exchange algorithm
+### 6.2) Key exchange using Elliptic Curve Diffie-Hellman (ECDH): public keyswithout serialization
+### 6.3) Key exchange using Elliptic Curve Diffie-Hellman (ECDH): public keys are serialized into byte arrays (EncodedPoint)
+### 6.4) Key exchange using X25519 Key Exchange algorithm
+
+
+
