@@ -138,7 +138,6 @@ link:src/message_authentication.rs[This example] shows how we can use RustCrypto
 See link:src/message_authentication.rs#64[src/message_authentication.rs] for an example using the `hmac` crate from RustCrypto to generate and verify HMACs.
 
 .Code Snippet
-[source,rust,linenums]
 ifdef::env-github[]
 link:src/message_authentication.rs#L64-87[View the source code.]
 endif::[]
