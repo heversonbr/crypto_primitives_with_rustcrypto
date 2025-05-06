@@ -4,7 +4,7 @@
 = Cryptography Primitives in Rust: short tutorial 
 
 This guide provides a brief overview of essential cryptographic operations using Rust. It is written as a quick reference for developers who want a practical summary of common cryptographic tasks such as hashing, encryption, key generation, and digital signatures. 
-Whether you are new to cryptography in Rust (just like me) or just need a refresher, this tutorial expects to help you get up and running quickly with examples.
+Whether you are new to cryptography in Rust (just like me) or just need a refresh, this tutorial expects to help you get up and running quickly with step-by-step commented examples.
 
 
 == Introduction
