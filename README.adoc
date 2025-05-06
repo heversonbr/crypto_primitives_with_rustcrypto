@@ -66,8 +66,17 @@ It is commonly used for checksums, password storage, and data integrity verifica
 See link:src/hashing.rs#29[src/hashing.rs] for a simple example demonstrating how to hash data using the `sha2` crate from RustCrypto.
 
 .Code Snippet
+//[source,rust,linenums]
+//include::src/hashing.rs[lines=29..45,highlight=15]
+
+ifdef::env-github[]
+link:src/main.rs#L29-L45[View the source code]
+endif::[]
+
+ifndef::env-github[]
 [source,rust,linenums]
 include::src/hashing.rs[lines=29..45,highlight=15]
+endif::[]
 
 === 2) Key Derivation Functions (KDFs) and Password Hashing
 
