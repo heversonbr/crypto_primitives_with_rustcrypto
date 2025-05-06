@@ -1,0 +1,287 @@
+= Introduction to RustCrypto
+
+
+RustCrypto maintain dozens of popular crates which provide pure Rust implementations of cryptographic algorithms, including the following:
+
+- *Asymmetric encryption*: elliptic-curves, ml-kem, rsa
+- *Cryptographic encoding formats*: const-oid, der, pem-rfc7468, pkcs8, x509-cert
+- *Digital signatures*: dsa, ecdsa, ed25519, rsa
+- *Elliptic curves*: k256 (secp256k1), p256, p384
+- *Hash functions*: blake2, sha2, sha3
+- *Key derivation functions*: hkdf, pbkdf2
+- *Message authentication codes*: hmac
+- *Password hashes*: argon2, pbkdf2, scrypt
+- *Sponge functions*: ascon, keccak
+- *Symmetric encryption*: aes-gcm, aes-gcm-siv, chacha20poly1305
+- *Traits*: aead, cipher,digest, password-hash, signature
+
+
+== Integrity with Hashing 
+
+== Key Derivation functions (Password Hashing)
+
+Key derivation (also known as password hashing) is the process of taking a user-provided password and transforming it into a secure, cryptographically derived key or hash. This is commonly used in authentication systems to store passwords securely and prevent unauthorized access.
+
+Key Derivation Functions (KDFs) like Argon2, bcrypt, and PBKDF2 are designed primarily to protect against offline brute-force attacks, where an attacker has access to stolen password hashes.
+
+.Why Use Key Derivation?
+1. Security Against Brute Force Attacks: Instead of storing raw passwords, a derived key is stored, making it computationally difficult for attackers to retrieve the original password.
+2. Mitigating Rainbow Table Attacks: A good key derivation function (KDF) includes salts (random values) to ensure that even identical passwords do not produce the same hash.
+3. Adjustable Computational Cost: Many KDFs allow for tunable parameters that control execution time and memory use to remain resilient against evolving hardware capabilities.
+
+Popular Key Derivation Functions
+• PBKDF2 (Password-Based Key Derivation Function 2)
+• Argon2 (Winner of the Password Hashing Competition)
+• bcrypt
+• scrypt
+
+
+.What distinguishes Key Derivation (Password Hashing) from using traditional hash functions (e.g., Sha2, MD5, etc) to hide passwords?
+
+Many people assume that hashing a password with a cryptographic hash function (like SHA-256 or MD5) is enough to store passwords securely, but this is a major security mistake. Key Derivation functions (Password Hashing) are designed specifically for securing passwords, whereas general-purpose hash functions are not. 
+
+Factors that distinguish one from the other:
+
+*1. Computational Cost (Work Factor)*
+* *Regular Hashing* (SHA-256, MD5, etc.)
+** Designed to be fast and efficient for general cryptographic operations (e.g., digital signatures, checksums).
+** Since they are fast, an attacker can brute-force billions of password guesses per second.
+* *Key Derivation Functions* (PBKDF2, bcrypt, Argon2, etc.)
+** Designed to be _intentionally slow_ to make brute-force attacks infeasible.
+** Some allow adjustable time and memory hardness to resist GPU/ASIC attacks (e.g., Argon2).
+* *Example*: A GPU can compute SHA-256 hashes at speeds exceeding 10 billion hashes per second, but Argon2 can be configured to take 100ms per hash, drastically slowing down brute-force attempts.
++
+*2. Use of Salt (Uniqueness)*
+* *Regular Hashing*
+** If you hash the same password with SHA-256, it always produces the same hash.
+** This makes it vulnerable to *rainbow table attacks* (precomputed hash lookups).
+* *Key Derivation Functions*
+** Always include a random salt (a unique value per password).
+** This ensures that even if two users choose the same password, their stored hashes will be different.
++
+*3. Resistance to Brute-Force and Hardware Attacks*
+* *Regular Hashing*
+** Vulnerable to dictionary attacks (attackers hash common passwords and compare).
+** GPUs and ASICs can compute billions of hashes per second.
+* *Key Derivation Functions*
+** Include features like iterations (PBKDF2) or memory-hardness (Argon2, scrypt) to make brute-force attacks expensive.
+** bcrypt, scrypt, and Argon2 can be configured to require more memory, making parallel attacks infeasible.
++
+*Example*: Using SHA-256, an attacker can compute 10 billion hashes/sec on a GPU. Using Argon2, you can force it to take 100ms per attempt, reducing attack speed to just 10 attempts/sec.
++
+*4. Adaptive Security*
+* *Regular Hashing*
+** Hardcoded output (e.g., SHA-256 always produces a 256-bit hash).
+** Cannot be adjusted over time.
+* *Key Derivation Functions*
+** Can increase computational cost as hardware improves.
+** bcrypt has a “cost” parameter, and Argon2 allows adjusting memory, iterations, and parallelism.
++
+*Example*: In 2025, password hashing may need to be 10× slower than in 2020 due to faster computers. With Argon2, we can increase memory and iteration parameters to keep it secure.
+
+
+There are three versions of Argon2, each optimized for different security needs:
+1. Argon2d (Fastest, but less resistant to side-channel attacks)
+ • Uses data-dependent memory access.
+ • Optimized for resisting GPU-based attacks (e.g., brute-force).
+ • Suitable for cryptocurrency mining but not recommended for password hashing because it’s vulnerable to side-channel attacks.
+2. Argon2i 🔒 (More secure, slightly slower)
+ • Uses data-independent memory access.
+ • Resistant to side-channel attacks but slower than Argon2d.
+ • Best for password hashing & key derivation functions.
+3. Argon2id ⚡ (Best of both worlds)
+ • A hybrid of Argon2d and Argon2i (starts
+
+
+*Take-away*
+- Never use SHA-256, MD5, or other general-purpose hash functions for passwords.
+- Use Argon2, bcrypt, or PBKDF2 for securely hashing passwords.
+
+
+== Integrity and Authentication with HMAC 
+
+
+
+== Symmetric Encryption: authenticated encryption (confidenciality, integrity and authentication)
+
+Symmetric encryption means *using the same key for both encryption and decryption*. 
+
+.symetric encryption
+----
++------------+      +------------+      +------------+      +------------+      +------------+
+|  Plaintext | ---> | Encryption | ---> | Ciphertext | ---> | Decryption | ---> | Plaintext  |
++------------+      +------------+      +------------+      +------------+      +------------+
+                          |                                        |                 
+                          |                                        |                 
+                          |-------> ( Key: Shared Secret ) <-------|
+----
+
+The keys, in practice, represent a shared secret between two or more parties that can be used to maintain a private information link.
+It is efficient and widely used for securing data in _transit_ and at _rest_. 
+
+However, just encrypting data does not guarantee that it will remain unchanged while encrypted, we also need to ensure its `integrity` and `authenticity`.Hence, often a message authentication code is added to a ciphertext to ensure that changes to the ciphertext will be noted by the receiver. That is where A`uthenticated Encryption with Associated Data` (*AEAD*) comes in.
+
+Two widely used AEAD ciphers are:
+
+- AES-GCM (Advanced Encryption Standard in Galois Counter Mode)
+- ChaCha20-Poly1305 (a secure, efficient alternative to AES)
+
+=== AES-GCM (AES-256-GCM)
+
+In cryptography, Galois/Counter Mode (GCM) is a mode of operation for symmetric-key cryptographic block ciphers which is widely adopted for its performance.
+
+AES (Advanced Encryption Standard) is a block cipherfootnote:disclaimer[In cryptography, a block cipher is a deterministic algorithm that operates on fixed-length groups of bits, called blocks.]  that operates on fixed-size blocks of data (e.g., 128, 192, or 256 bits). GCM (Galois/Counter Mode) turns AES into a stream cipher, making it faster and adding authentication.
+
+=== ChaCha20-Poly1305
+
+ChaCha20-Poly1305 is an AEAD cipher that is often used as a faster alternative to AES-GCM, especially on systems without hardware acceleration (e.g., mobile and embedded devices).
+
+Key Features:
+
+- Stream cipher: No block size, making it more efficient for variable-length data.
+- Resistant to side-channel attacks (unlike AES which is vulnerable to cache-timing attacks).
+- Poly1305: A fast MAC function ensures integrity.
+- Nonce (IV) should be unique, just like AES-GCM.
+
+
+=== Takeaway:
+- `AES` (Basic AES in ECB, CBC, or CTR modes) provides confidentiality only but does not ensure integrity or authenticity.
+ - `AES-256-GCM` provides confidentiality, integrity, and authenticity due to its GCM (Galois/Counter Mode), which includes authentication via GMAC (Galois Message Authentication Code).
+- `ChaCha20-Poly1305` also provides confidentiality, integrity, and authenticity, using ChaCha20 for encryption and Poly1305 for authentication, similar to how AES-GCM operates.
+- Both `AES-256-GCM` and `ChaCha20-Poly1305` are *AEAD* (Authenticated Encryption with Associated Data) ciphers, meaning they prevent tampering and ensure message authenticity in addition to encryption.
+
+== Asymmetric Encryption: 
+
+Asymmetric cryptography (or public-key cryptography) is a cryptographic system that uses key pairs:
+
+- A public key for encryption (or signature verification).
+- A private key for decryption (or signing).
+
+RustCrypto is a collection of cryptographic libraries in Rust that provide secure and efficient implementations of cryptographic algorithms.
+
+=== Asymmetric Cryptography Basics
+
+Asymmetric encryption is used in protocols like TLS, PGP, and SSH. 
+The main properties of asymmetric cryptography are:
+
+- Confidentiality: A message encrypted with the public key can only be decrypted with the private key.
+- Authentication : A signature created with the private key can be verified with the public key.
+- Non-repudiation: A digital signature ensures the sender cannot deny sending the message.
+
+*The most common asymmetric encryption algorithms include:*
+
+- *RSA* (Rivest-Shamir-Adleman) : for encryption/decryption, but avoid unless compatibility is required, as it's slower.
+- *ECC* (Elliptic Curve Cryptography): for key agreement, digital signatures, pseudo-random generators and other tasks
+- *Diffie-Hellman* (for key exchange)
+- *ECDSA*: avoid, more error-prone than Ed25519
+- *X25519* (for Diffie-Hellman key exchange ): *Recommended*, secure alternative to ECDH.
+- *Ed25519* (for digital signatures) → *Recommended*, fast and secure.
+
+*What is Padding scheme?*
+
+A padding scheme in RSA encryption is a method used to securely format plaintext before encryption, ensuring that the message is of the correct length and adding randomness to prevent certain types of attacks.
+
+Why is Padding Necessary?
+
+- RSA encryption is deterministic (same input → same output), making it vulnerable to replay attacks.
+- Without padding, small messages (e.g., “yes” or “no”) could be easily guessed.
+- Padding adds randomness, making it harder for attackers to infer the original message.
+
+Common RSA Padding Schemes:
+
+* *PKCS#1* v1.5 Padding
+** One of the earliest padding schemes.
+** Adds a fixed structure with random bytes to the message before encryption.
+** Vulnerable to padding oracle attacks like Bleichenbacher’s attack.
+* *OAEP* (Optimal Asymmetric Encryption Padding)
+** A more secure padding scheme introduced in PKCS#1 v2.0.
+** Uses a mask generation function (MGF) (often MGF1 with SHA-256).
+** Adds randomness to resist chosen ciphertext attacks.
+* *PSS* (Probabilistic Signature Scheme)
+** Used for RSA signatures (not encryption).
+** Introduced in PKCS#1 v2.1.
+** More secure than PKCS#1 v1.5 for signing.
+
+More about OAEP: 
+
+Optimal Asymmetric Encryption Padding (OAEP) is a padding scheme used in RSA encryption to prevent vulnerabilities such as dictionary attacks and chosen-ciphertext attacks. OAEP introduces randomness and ensures that encrypting the same plaintext twice produces different ciphertexts.
+
+The OAEP scheme follows these steps:
+
+- Uses a hash function (e.g., SHA-256) for security.
+- Introduces randomness via a mask generation function (MGF1).
+- Prevents an attacker from deducing plaintext structure.
+
+
+.asymmetric encryption using public key: Ensures confidentiality, only the intended recipient can read the message.
+----
++------------+       +------------+       +------------+       +------------+       +------------+
+|  Plaintext | ----> | Encryption | ----> | Ciphertext | ----> | Decryption | ----> | Plaintext  |
++------------+       +------------+       +------------+       +------------+       +------------+
+       |                  |                                          |                 |
+       |   (Public Key)   |                                          |  (Private Key)  |
+       |----------------->|                                          |<----------------|
+----
+
+
+.asymmetric encryption using private key: Ensures integrity and authentication, anyone can verify who exactly encrypted (signed) a message
+----
++------------+       +------------+       +------------+       +------------+       +------------+
+|  Plaintext | ----> | Encryption | ----> | Ciphertext | ----> | Decryption | ----> | Plaintext  |
++------------+       +------------+       +------------+       +------------+       +------------+
+       |                  |                                          |                 |
+       |   (Public Key)   |                                          |  (Private Key)  |
+       |----------------->|                                          |<----------------|
+----
+
+
+
+===  Digital Signatures and verification with RustCrypto
+
+In the RustCrypto ecosystem, we have multiple digital signature algorithms like RSA, DSA, ECDSA, and EdDSA (Ed25519). 
+For signing & verification in the RustCrypto ecosystem, the recommended libraries are:
+
+
+=== Key exchange 
+
+In cryptography, key exchange is essential for establishing secure communication between parties. RustCrypto provides crates to facilitate secure key exchange implementations in Rust.
+The main approaches include:
+1. Diffie-Hellman (DH) Key Exchange: uses modular arithmetic and large prime numbers for secure key generation.
+2. Elliptic Curve Diffie-Hellman (ECDH): a more efficient method using elliptic curve cryptography.
+3. X25519: an instance of the Elliptic Curve Diffie-Hellman (ECDH) key exchange algorithm, optimized for efficient and security
+
+
+==== DH key exchange 
+
+1. Both parties agree on a prime number `p` and generator `g`.
+2. Each generates a private key (`a` and `b`).
+3. Public keys are computed as `A = g^a mod p` and `B = g^b mod p`.
+4. Each party computes the shared secret, ensuring `B^a mod p` == `A^b mod p`.
+
+==== ECDH : Elliptic curve Diffie-Helmman 
+
+1. Alice and Bob generate random `ephemeral` secrets (`private` keys).
+2. They derive `public` keys from these secrets.
+3. Each party uses the other’s public key to compute a `shared secret`.
+4. The derived secrets match, enabling secure communication.
+
+==== X25519 : 
+
+1. Both parties generate private keys (StaticSecret).
+2. Public keys are derived from private keys.
+3. Each computes a shared secret using the other’s public key.
+4. Shared secrets match, enabling encrypted communication.
+
+== Final notes
+
+- Use SHA-256 or BLAKE3 for hashing.
+- Use HMAC-SHA-256 for authentication.
+- Use AES-GCM or ChaCha20-Poly1305 for encryption.
+- Use Ed25519 for signatures, X25519 for key exchange.
+- Use Argon2 for password hashing.
+- Use rand/getrandom for secure random numbers.
+
+
+== References
+
+- https://cryptography.rs/
