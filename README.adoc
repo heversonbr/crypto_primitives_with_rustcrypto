@@ -411,6 +411,5 @@ The topics we have covered are:
 
 While we have focused on some of the core cryptographic primitives, it is important to note that the *RustCrypto* library offers a much broader range of cryptographic algorithms and features beyond what we have covered here. These topics represent just the foundational building blocks to get you started with cryptography in Rust.
 
-This tutorial is designed to be a quick reference for anyone stepping into the world of cryptography in Rust (just like me!). Whether you are building secure systems, working on encryption protocols, or simply diving into cryptography, I hope this guide provides you with the tools and knowledge to get started and experiment confidently.
-
+This document is expected to be a quick reference for anyone stepping into cryptography in Rust (just like me!). I wrote this examples while learning how to use cryptographic primitives with RustCrypto. I hope this guide provides you enough information to get started as well. 
 
