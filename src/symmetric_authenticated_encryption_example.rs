@@ -66,7 +66,7 @@ pub fn chacha_poly_authentication_encryption_example() {
     // Stream cipher: No block size, making it efficient for variable-length data.
     // Resistant to side-channel attacks.
     info!("---------------------Symmetric Encryption-------------------");
-    info!("Example 4.1: Authenticated Encryption with ChaCha20-Poly1305");
+    info!("Example 4.2: Authenticated Encryption with ChaCha20-Poly1305");
     info!("----------------- Confidentiality and Integrity ------------");
     info!("------------------------------------------------------------");
     // 1) Get a random number generator for key and nonce generation
