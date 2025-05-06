@@ -29,7 +29,7 @@ Before diving in, it is important to choose the right cryptographic library base
 - Safe, readable, and performant +
 |===
 
-This short tutorial will focus on using RustCrypto to demonstrate practical examples of hashing, symmetric encryption, message authentication, and public-key cryptography, all using idiomatic Rust.
+This short tutorial will focus on using RustCrypto to demonstrate practical examples of hashing, symmetric encryption, message authentication, and public-key cryptography, using Rust.
 
 
 == RustCrypto
