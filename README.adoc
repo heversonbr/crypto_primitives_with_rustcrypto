@@ -66,9 +66,6 @@ It is commonly used for checksums, password storage, and data integrity verifica
 See link:src/hashing.rs#29[src/hashing.rs] for a simple example demonstrating how to hash data using the `sha2` crate from RustCrypto.
 
 .Code Snippet
-//[source,rust,linenums]
-//include::src/hashing.rs[lines=29..45,highlight=15]
-
 ifdef::env-github[]
 link:src/main.rs#L29-L45[View the source code]
 endif::[]
@@ -109,8 +106,16 @@ Argon2 is the recommended algorithm for password hashing, offering strong resist
 See link:src/password_hashing_with_key_derivation_functions.rs#45[src/password_hashing_with_key_derivation_functions.rs] for an example of how to securely hash passwords using the argon2 crate from RustCrypto.
 
 .Code Snippet
+ifdef::env-github[]
+link:src/password_hashing_with_key_derivation_functions.rs#L46-L76[View the source code]
+endif::[]
+
+ifndef::env-github[]
 [source,rust,linenums]
 include::src/password_hashing_with_key_derivation_functions.rs[lines=46..76]
+endif::[]
+
+
 
 === 3) Message Authentication Using HMAC
 
@@ -129,11 +134,19 @@ This ensures that the message has not been tampered with (integrity) and that it
 link:src/message_authentication.rs[This example] shows how we can use RustCrypto to generate and verify a `HMAC`.
 
 *Rust coding example*:
+
 See link:src/message_authentication.rs#64[src/message_authentication.rs] for an example using the `hmac` crate from RustCrypto to generate and verify HMACs.
 
 .Code Snippet
 [source,rust,linenums]
+ifdef::env-github[]
+link:src/message_authentication.rs#L64-87[View the source code]
+endif::[]
+
+ifndef::env-github[]
+[source,rust,linenums]
 include::src/message_authentication.rs[lines=64..87]
+endif::[]
 
 === 4) Symmetric Encryption
 
@@ -155,11 +168,19 @@ Modern symmetric encryption schemes often include authenticated encryption, whic
 - Produces a ciphertext and an authentication tag.
 - Decryption fails if the ciphertext or tag has been altered.
 
+*Rust coding example*:
+
 See link:src/symmetric_authenticated_encryption_example.rs#14[[src/symmetric_authenticated_encryption_example.rs] for an example of using the `aes-gcm` crate from RustCrypto to securely encrypt and authenticate a message with `AES-256-GCM`.
 
+ifdef::env-github[]
+link:src/symmetric_authenticated_encryption_example.rs#L14-L55[View code snippet (lines 14–55)]
+endif::[]
+
+ifndef::env-github[]
 .Code Snippet
 [source,rust,linenums]
 include::src/symmetric_authenticated_encryption_example.rs[lines=14..55]
+endif::[]
 
 
 ==== 4.2) Encryption & authentication with ChaCha20-Poly1305
@@ -176,6 +197,7 @@ include::src/symmetric_authenticated_encryption_example.rs[lines=14..55]
 This combination is considered secure, and it is used in protocols like `TLS 1.3` and modern VPN technologies.
 
 *Rust coding example*:
+
 See link:src/symmetric_authenticated_encryption_example.rs#63[src/symmetric_authenticated_encryption_example.rs] for an example of using the `chacha20poly1305` crate from RustCrypto to perform authenticated encryption with `ChaCha20-Poly1305`.
 
 .Code Snippet
