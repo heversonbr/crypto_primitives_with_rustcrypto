@@ -18,7 +18,7 @@ pub fn run_argon_example(){
     let password2_to_hash = &password1_to_hash;    // Verify the same
     debug!("password1_to_hash: {:?}", password1_to_hash);
     debug!("password2_to_hash: {:?}", password2_to_hash);
-
+    
     // Hash pass 1
     let hash1_argon2 = hash_with_argon2(password1_to_hash);
     info!("Hash(password1_to_hash): {:?}", hash1_argon2);
@@ -44,10 +44,8 @@ pub fn run_argon_example(){
 
 // Password Hashing with Argon2
 fn hash_with_argon2(pass: &str) -> String {
-    
     // Step 1: Instantiate the random number generator (RNG) for generating salts
     let rng = OsRng;
-
     // Step 2: Create the Argon2 hasher with strong parameters for hashing
     let argon_hasher = Argon2::new(
         Algorithm::Argon2id,    // Using Argon2id (best security variant)
@@ -59,24 +57,20 @@ fn hash_with_argon2(pass: &str) -> String {
             None   // Default output length (32 bytes)
         ).unwrap(), // 
     );
-
     // Step 3: Generate a random salt for the password hash to ensure uniqueness even for identical passwords
     let salt = SaltString::generate(rng);
-
     // Step 4: Start timing the hashing process for performance measurement
     let start_time = Instant::now();  
-
     // Step 5: Hash the password using Argon2 and the generated salt
-    let hashed_data = argon_hasher.hash_password(pass.as_bytes(), &salt).expect("Error computing Argon2 hash!");
-
+    let hashed_data = argon_hasher
+                .hash_password(pass.as_bytes(), &salt)
+                .expect("Error computing Argon2 hash!");
     // Calculate the time taken for hashing
     let argon2_duration = start_time.elapsed();   
     let hashed_string: String = hashed_data.to_string();
-    
     // Debugging output to show the hashed password and the time taken for hashing
     debug!("Argon2 hash: {:?}", hashed_string);
     debug!("Argon2 took: {:?} to hash!", argon2_duration);
-    
     // Return the hashed password as a string
     hashed_string
 }

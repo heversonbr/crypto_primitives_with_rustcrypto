@@ -18,24 +18,24 @@ fn main() {
     // set to debug to see more output
     Builder::new().filter_level(LevelFilter::Info).init();
     
-    // 1) Hashwith SHA256
+    // 1) Hash with SHA256
     hashing::hash_example();
     //
-    // 2) Derivation Key functions (h)
+    // 2) Key Derivation Functions (KDFs) / Password hashing
     // 2.1) Hashing with Argon2: 
     password_hashing_with_key_derivation_functions::run_argon_example();
     password_hashing_with_key_derivation_functions::run_brute_force_example();
     //
-    // 3) Verifying integrity and authentication with HMAC (Hash-based Message Authentication Code)
+    // 3) Message: Verifying integrity and authentication with HMAC (Hash-based Message Authentication Code)
     message_authentication::check_integrity_example();
     //
-    // 4) Symmetric encryption: 
+    // 4) Symmetric Encryption
     // 4.1) Encryption & authentication with AES-256-GCM
     symmetric_authenticated_encryption_example::aes_gcm_authentication_encryption_example();
     // 4.2) Encryption & authentication with ChaCha20-Poly1305
     symmetric_authenticated_encryption_example::chacha_poly_authentication_encryption_example();
     //
-    // 5) Asymmetric encryption:
+    // 5) Asymmetric Encryption
     // 5.1) Asymmetric encryption fo Confidentiality using RSA and OAEP
     asymmetric_authenticated_encryption_example::rsa_oaep_asymmetric_encryption_confidentiality_example();
     // 5.2) Asymmetric encryption for Digital Signatures using RSA and PKCS1-v1_5
@@ -43,7 +43,7 @@ fn main() {
     // 5.3) Asymmetric encryption for Digital Signatures using Ed25519
     asymmetric_authenticated_encryption_example::ed25529_asymmetric_encryption_digital_signatures_authentication();
     //
-    // 6) Key exchange:
+    // 6) Key Exchange
     // 6.1) Key exchange using Diffie-Hellman (DH) Key Exchange algorithm
     key_exchange::key_exchange_dh_example();
     // 6.2) Key exchange using Elliptic Curve Diffie-Hellman (ECDH): public keyswithout serialization

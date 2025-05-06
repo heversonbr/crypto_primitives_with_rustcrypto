@@ -1,91 +1,344 @@
-# Cryptography  Primitives with RustCrypto - Short Tutorial
+:source-highlighter: highlightjs
+:highlightjs-theme: monokai
 
-## Introduction
+= Cryptography Primitives in Rust: short tutorial 
 
-Cryptography is essential for securing data, ensuring integrity, and protecting communications. In this tutorial, we will explore basic cryptographic primitives using RustCrypto. 
-RustCrypto is a collection of cryptographic libraries written in the Rust programming language. It provides secure and efficient cryptographic algorithms, protocols, and tools for developers. The libraries within RustCrypto cover various cryptographic primitives such as hashing (e.g., SHA-256), encryption (e.g., AES), digital signatures, key exchange, etc.
-In this tutorial will present practical examples of how to use some of these primitives.
-
-
-## 1) Hash with SHA-256
-
-Hashing is a one-way function that takes an input and produces a fixed-length output (hash). It is commonly used for checksums, password storage, and data integrity verification.
-In summary:
-
-- A hashing algorithm (SHA-256 in this case) takes an input and computes a unique hash.
-- Even a small change in the input drastically changes the hash (avalanche effect).
-- Hashes are deterministic: the same input always results in the same hash.
-- Hashing is useful for verifying file integrity, password storage (with additional salting), digital signatures
-
-// template -> link:https://github.com/username/rust-crypto/blob/main/src/key_exchange.rs[Key Exchange Example]
-
-link:src/hashing.rs[This example]. shows how to use RustCrypto to hash data.
-
-## 2) Key Derivation Functions and Password Hashing
-
-Key Derivation Functions (KDF) enhance password security by making brute-force attacks computationally expensive. Unlike simple hashing, KDFs introduce time and memory costs.
-
-### Differences Between SHA-256 and Argon2:
-
-----
-| Feature                | SHA-256 |          Argon2 
-|------------------------|---------|---------------------------------|
-| Speed                  | Fast           | Slow (intentionally)     |
-| Salted?                | No             | Yes                      |
-| Brute-force Resistant? | No             | Yes                      |
-| Use case               | General hashing | Password hashing |
-----
-
-link:src/password_hashing_with_key_derivation_functions.rs[This example].” shows how to use Argon2 for hashing passwords with RustCrypto.
+This guide provides a concise overview of essential cryptographic operations using Rust. It is designed as a quick reference for developers who want a practical summary of common tasks such as hashing, encryption, key generation, and digital signatures. Whether you are new to cryptography in Rust or just need a refresher, this tutorial will help you get up and running quickly with clear examples and minimal setup.
 
 
-## 3) Message Authentication Using HMAC
+== Introduction
 
-HMAC (Hash-based Message Authentication Code) ensures both the integrity and authenticity of a message using a shared secret key.
+Cryptography plays a crucial role in securing data, ensuring integrity, and protecting communications. In this short tutorial, we explore fundamental cryptographic primitives using the RustCrypto. RustCrypto is a collection of pure Rust libraries designed for flexibility, safety, and performance.
 
-In order to do that, both sender and receiver must know a secret shared key. The sender generates an `HMAC` for a message using this shared key and transmits both the message and the HMAC to the receiver. Upon receiving the data, the receiver recalculates the `HMAC` using the same secret shared key and checks whether it matches the received `HMAC`. This process ensures both message integrity and authenticity. 
+Before diving in, it is important to choose the right cryptographic library based on your specific needs. Here is a brief overview of the main options available in the Rust ecosystem:
+
+*Choosing a Cryptography Library in Rust*
+
+//* *rust-crypto*
+//** Status: Largely unmaintained
+//** Recommendation: Not suitable for new projects.
+//* *ring*
+//** Status: Actively maintained and widely adopted
+//** Highlights:
+//*** High performance and security
+//*** Backed by BoringSSL primitives
+//*** Suitable for production environments where performance and battle-tested //implementations are critical
+//* *RustCrypto*
+//** Status: Actively maintained
+//** Highlights:
+//*** A modular suite of cryptographic crates written entirely in Rust (no FFI to C //libraries)
+//*** Flexible: use only the algorithms you need
+//*** Safe, readable, and performant
+//** Example of Rust crates:
+//*** aes: AES encryption
+//*** sha2: SHA-2 hashing
+//*** hmac: HMAC authentication
+//*** chacha20poly1305: AEAD encryption
+//*** digest, ed25519-dalek, curve25519-dalek, and others
+
+[cols="1,2,3", options="header"]
+|===
+| 🔧 Library        | 📝 Status                        | 🌟 Highlights
+| *rust-crypto*     | ❌ Largely unmaintained         | _Not suitable for new projects_
+| *ring*            | ✅ Actively maintained          | 
+- High performance and security +
+- Based on BoringSSL primitives +
+- Production-ready for speed and safety
+| *RustCrypto*      | ✅ Actively maintained          | 
+- Modular, pure Rust (no C FFI) +
+- Pick only the algorithms you need +
+- Safe, readable, and performant +
+|===
+
+This short tutorial will focus on using RustCrypto to demonstrate practical examples of hashing, symmetric encryption, message authentication, and public-key cryptography, all using idiomatic Rust.
+
+
+== RustCrypto
+
+RustCrypto is a collection of cryptographic libraries written in the Rust programming language. 
+It provides secure and efficient cryptographic algorithms, protocols, and tools for developers. 
+The libraries within RustCrypto cover various cryptographic primitives such as hashing (e.g., SHA-256), encryption (e.g., AES), digital signatures, key exchange, etc.
+In the following I present practical examples of how to use some of these primitives.
+
+
+=== 1) Hash with SHA-256
+
+Hashing is a one-way function that takes an input and produces a fixed-length output (hash). 
+It is commonly used for checksums, password storage, and data integrity verification.
+
+*Key properties of hashing*:
+
+- A hashing algorithm (e.g., SHA-256) computes a unique digest from the input.
+- ven small changes to the input produce drastically different hashes (_the avalanche effect_).
+- Hashing is deterministic: the same input always produces the same output.
+- Hashes are useful for integrity checks, password storage (with salt), and digital signatures.
+
+*Rust coding example*:
+
+See link:src/hashing.rs#29[src/hashing.rs] for a simple example demonstrating how to hash data using the `sha2` crate from RustCrypto.
+
+.Code Snippet
+[source,rust,linenums]
+include::src/hashing.rs[lines=29..45,highlight=15]
+
+=== 2) Key Derivation Functions (KDFs) and Password Hashing
+
+Key Derivation Functions (KDFs) are used to securely derive cryptographic keys from passwords. Unlike basic hashing, KDFs are intentionally slow and memory-intensive, making brute-force attacks significantly more difficult.
+
+==== Differences Between SHA-256 and Argon2
+
+Why use a KDF instead of a simple hash like SHA-256?
+
+//[cols="1,1,1", options="header"]
+//|===
+//| Feature                | SHA-256           | Argon2
+//| Speed                  | Fast              | Slow (by design)
+//| Uses Salt?             | No                | Yes
+//| Brute-force Resistant? | No                | Yes
+//| Recommended Use case   | General hashing   | Password hashing
+//|===
+[cols="^1,^1,^1", options="header"]
+|===
+| 🔍 Feature                | 🔐 SHA-256         | 🛡️ Argon2
+| ⚡ Speed                   | 🚀 Fast            | 🐢 Slow (by design)
+| 🧂 Uses Salt?             | ❌ No              | ✅ Yes
+| 🔐 Brute-force Resistant? | ❌ No              | ✅ Yes
+| 🎯 Recommended Use case   | General hashing    | Password hashing
+|===
+
+Argon2 is the recommended algorithm for password hashing, offering strong resistance to GPU-based attacks through its configurable time and memory costs.
+
+*Rust coding example*:
+See link:src/password_hashing_with_key_derivation_functions.rs#45[src/password_hashing_with_key_derivation_functions.rs] for an example of how to securely hash passwords using the argon2 crate from RustCrypto.
+
+.Code Snippet
+[source,rust,linenums]
+include::src/password_hashing_with_key_derivation_functions.rs[lines=46..76]
+
+=== 3) Message Authentication Using HMAC
+
+HMAC (Hash-based Message Authentication Code) is used to verify both the integrity and authenticity of a message by combining a cryptographic hash function with a secret shared key.
+
+*How it works*:
+
+- Both the sender and receiver share a secret key.
+- The sender generates an HMAC from the message using this shared key.
+- The message and its HMAC are sent to the receiver.
+- The receiver uses the same shared key to compute a new HMAC from the received message.
+- If the newly computed HMAC matches the received one, the message is verified.
+
+This ensures that the message has not been tampered with (integrity) and that it came from someone who knows the secret key (authenticity).
 
 link:src/message_authentication.rs[This example] shows how we can use RustCrypto to generate and verify a `HMAC`.
 
+*Rust coding example*:
+See link:src/message_authentication.rs#64[src/message_authentication.rs] for an example using the `hmac` crate from RustCrypto to generate and verify HMACs.
 
-## 4) Symmetric Encryption: 
-### 4.1) Encryption & authentication with AES-256-GCM
-link:src/symmetric_authenticated_encryption_example.rs#14[This example] shows how we can use symmetric encryption with RustCrypto using AES-256-GCM.
+.Code Snippet
+[source,rust,linenums]
+include::src/message_authentication.rs[lines=64..87]
 
-### 4.2) Encryption & authentication with ChaCha20-Poly1305
-link:src/symmetric_authenticated_encryption_example.rs#75[This example] shows how we can use symmetric encryption with RustCrypto using ChaCha20-Poly1305.
+=== 4) Symmetric Encryption
+
+Symmetric encryption uses the same secret key for both encryption and decryption. It is commonly used for encrypting data at rest or in transit when both parties can securely share a secret key.
+
+Modern symmetric encryption schemes often include authenticated encryption, which ensures both confidentiality (the data is hidden) and integrity/authenticity (the data has not been tampered with).
+
+==== 4.1) Encryption & authentication with AES-256-GCM
+
+*AES-256-GCM* is an authenticated encryption algorithm that combines the AES block cipher with Galois/Counter Mode (GCM). It ensures:
+
+- Confidentiality: The message is encrypted using AES-256.
+- Integrity & Authenticity: A tag is generated to detect tampering, using the GCM mode.
+
+*Key properties*:
+
+- Requires a 256-bit secret key.
+- Uses a unique nonce (number used once) for each encryption operation.
+- Produces a ciphertext and an authentication tag.
+- Decryption fails if the ciphertext or tag has been altered.
+
+See link:src/symmetric_authenticated_encryption_example.rs#14[[src/symmetric_authenticated_encryption_example.rs] for an example of using the `aes-gcm` crate from RustCrypto to securely encrypt and authenticate a message with *AES-256-GCM*.
+
+.Code Snippet
+[source,rust,linenums]
+include::src/symmetric_authenticated_encryption_example.rs[lines=14..55]
 
 
+==== 4.2) Encryption & authentication with ChaCha20-Poly1305
 
-## 5) Asymmetric encryption:
-### 5.1) Asymmetric encryption fo Confidentiality using RSA and OAEP
+*ChaCha20-Poly1305* is another modern authenticated encryption algorithm that provides both confidentiality and authenticity. Unlike AES, which is based on block ciphers, ChaCha20 is a stream cipher. It’s designed to be highly secure and efficient, particularly in environments where hardware acceleration for AES may not be available.
 
-link:src/asymmetric_authenticated_encryption_example.rs#15[This example] shows how we can use RSA for encryption and decryption using RustCrypto.
+*Key properties*:
 
-### 5.2) Asymmetric encryption for Digital Signatures using RSA and PKCS1-v1_5
+- ChaCha20 provides the encryption (confidentiality) with a stream cipher.
+- Poly1305 provides the message authentication code (MAC), ensuring integrity and authenticity.
+- Requires a 256-bit secret key and a unique nonce for each encryption.
+- Ideal for environments with limited resources (e.g., mobile devices, IoT) due to its simplicity and performance.
 
-link:src/asymmetric_authenticated_encryption_example.rs#45[This example] shows how we can use Digital signatures with RustCrypto using RSA and PKCS1-v1_5.
+This combination is considered secure, and it is used in protocols like `TLS 1.3` and modern VPN technologies.
 
-### 5.3) Asymmetric encryption for Digital Signatures using Ed25519
+*Rust coding example*:
+See link:src/symmetric_authenticated_encryption_example.rs#63[src/symmetric_authenticated_encryption_example.rs] for an example of using the `chacha20poly1305` crate from RustCrypto to perform authenticated encryption with *ChaCha20-Poly1305*.
 
-link:src/asymmetric_authenticated_encryption_example.rs#92[This example] shows how we can use Digital signatures with RustCrypto using Ed25519 (elliptic-curve).
+.Code Snippet
+[source,rust,linenums]
+include::src/symmetric_authenticated_encryption_example.rs[lines=63..100]
 
-## 6) Key exchange:
-### 6.1) Key exchange using Diffie-Hellman (DH) Key Exchange algorithm
 
-link:src/key_exchange.rs#29[This example] shows how we performe key exchange using Diffie-Hellman (DH) Key Exchange algorithm
+=== 5) Asymmetric Encryption
 
-### 6.2) Key exchange using Elliptic Curve Diffie-Hellman (ECDH): public keyswithout serialization
+Asymmetric encryption uses two different keys: a *public key* (for encryption) and a *private key* (for decryption). This is ideal for scenarios where secure key distribution is important, as the public key can be shared openly, while the private key is kept secret.
 
-link:src/key_exchange.rs#72[This example] shows how we can performe key exchange  using Elliptic Curve Diffie-Hellman (ECDH) without serialization algorithm with RustCrypto.
+==== 5.1)  Asymmetric Encryption for Confidentiality Using RSA and OAEP
 
-### 6.3) Key exchange using Elliptic Curve Diffie-Hellman (ECDH): public keys are serialized into byte arrays (EncodedPoint)
+*RSA* is one of the most widely used asymmetric encryption algorithms. 
+When combined with *OAEP* (Optimal Asymmetric Encryption Padding), it offers both confidentiality and protection against certain types of attacks, such as chosen-ciphertext attacks.
 
-link:src/key_exchange.rs#101[This example] shows how we can performe key exchange using Elliptic Curve Diffie-Hellman (ECDH) with serialization algorithm with RustCrypto.
+NOTE: *Chosen-ciphertext attacks* (CCA) are a type of cryptographic attack where an attacker can submit ciphertexts of their choice to be decrypted and then observe the resulting plaintexts. By doing this, the attacker tries to gain information that helps them decrypt other ciphertexts or even recover the decryption key. Simple encryption schemes like RSA without padding are not CCA-secure—attackers can manipulate ciphertexts to learn information. Secure padding schemes like OAEP (Optimal Asymmetric Encryption Padding) or using authenticated encryption (like AES-GCM or ChaCha20-Poly1305) help defend against CCAs.
 
-### 6.4) Key exchange using X25519 Key Exchange algorithm
+*Key properties*:
 
-link:src/key_exchange.rs#138[This example] shows how we can performe key exchange using X25519 Key Exchange algorithm with RustCrypto.
+- RSA is used for encryption and decryption.
+- OAEP adds padding to the message before encryption, making it more secure.
+- RSA with OAEP is often used for encrypting small pieces of data (e.g., symmetric keys in hybrid encryption systems).
 
+
+*Rust coding example*:
+Check the code at link:src/asymmetric_authenticated_encryption_example.rs#15[src/asymmetric_encryption_rsa_oaep.rs]. The example demonstrates how to use RSA with OAEP for encryption and decryption using RustCrypto.
+
+.Code Snippet
+[source,rust,linenums]
+include::src/asymmetric_authenticated_encryption_example.rs[lines=15..39]
+
+==== 5.2) Asymmetric encryption for Digital Signatures using RSA and PKCS1-v1_5
+
+*Digital signatures* are used to verify the authenticity and integrity of a message or document. Using *RSA* and *PKCS1-v1_5* padding, a private key signs the data, and the public key can be used to verify the signature.
+
+*Key properties*:
+
+- *RSA* is used to sign data with the private key and verify the signature with the public key.
+- *PKCS1-v1_5* padding is used for both signing and verification to enhance security.
+- Digital signatures are widely used in software distribution, secure communications, and authentication systems.
+
+*Rust coding example*:
+This example demonstrates how to sign and verify messages using *RSA* and *PKCS1-v1_5* with RustCrypto. Check it out in the code at link:src/asymmetric_authenticated_encryption_example.rs#41[src/asymmetric_encryption_rsa_pkcs1_v15.rs].
+
+.Code Snippet
+[source,rust,linenums]
+include::src/asymmetric_authenticated_encryption_example.rs[lines=41..72]
+
+
+==== 5.3) Asymmetric Encryption for Digital Signatures using Ed25519
+
+*Ed25519* is a modern elliptic-curve signature scheme known for its high security and performance. It is widely used for applications that require efficient and secure digital signatures.
+
+*Key properties*:
+
+- *Ed25519* offers strong security based on elliptic curve cryptography.
+- It provides fast and efficient signing and verification operations.
+- Digital signatures with *Ed25519* are commonly used in modern protocols, such as *SSH*, *TLS*, and cryptocurrency systems.
+
+*Rust coding example*:
+This example demonstrates how to use *Ed25519* (elliptic-curve) for digital signatures with RustCrypto. Check it out in the code at link:src/asymmetric_authenticated_encryption_example.rs#85[src/asymmetric_encryption_ed25519.rs].
+
+.Code Snippet
+[source,rust,linenums]
+include::src/asymmetric_authenticated_encryption_example.rs[lines=85..107]
+
+
+=== 6) Key exchange
+
+Key exchange algorithms allow two parties to securely share a secret key over an insecure channel. These algorithms ensure that even if an attacker intercepts the exchanged data, they cannot derive the secret key.
+
+==== 6.1) Key exchange using Diffie-Hellman (DH) 
+
+The *Diffie-Hellman* (DH) key exchange protocol allows two parties to generate a shared secret key over an insecure communication channel. *DH* is based on modular arithmetic and is commonly used for secure communication protocols.
+
+*Key properties*:
+
+- Diffie-Hellman allows two parties to independently generate a shared secret key.
+- The security of DH relies on the difficulty of the discrete logarithm problem.
+- This method can be used for both symmetric key encryption and secure communication.
+
+*Rust coding example*:
+This example demonstrates how to perform a key exchange using the traditional Diffie-Hellman (DH) algorithm with RustCrypto. Check it out in the code at link:src/key_exchange.rs#29[src/key_exchange.rs].
+
+.Code Snippet
+[source,rust,linenums]
+include::src/key_exchange.rs[lines=29..57]
+
+
+==== 6.2) Key exchange using Elliptic Curve Diffie-Hellman (ECDH): Public Keys without Serialization
+
+Elliptic Curve Diffie-Hellman (ECDH) is a more efficient version of Diffie-Hellman that uses elliptic curve cryptography (ECC) for key exchange. In this case, public keys are exchanged without serialization, allowing for faster processing
+
+*Key properties*:
+
+- *ECDH* uses elliptic curve mathematics to achieve faster and more secure key exchanges than traditional *DH*.
+- No serialization of the public keys means a more compact and efficient exchange.
+- It is ideal for environments where performance and smaller key sizes are important (e.g., mobile devices, IoT).
+
+*Rust coding example*:
+This example demonstrates how to perform an ECDH key exchange using raw public keys without serialization. Check it out in the code at link:src/key_exchange.rs#72[src/key_exchange.rs].
+
+.Code Snippet
+[source,rust,linenums]
+include::src/key_exchange.rs[lines=66..87]
+
+
+==== 6.3) Key exchange using Elliptic Curve Diffie-Hellman (ECDH): Public Keys serialized into Byte Arrays (EncodedPoint)
+
+This variation of *ECDH* involves serializing the public keys into byte arrays (using the EncodedPoint format) before performing the key exchange. Serialization allows for easier transmission of keys over networks.
+
+*Key properties*:
+
+- Public keys are serialized into a standardized format, ensuring interoperability with different systems.
+- The serialization format (EncodedPoint) provides a compact and secure representation of elliptic curve points.
+- This is the preferred method for many modern systems that require key exchange over untrusted networks.
+
+*Rust coding example*:
+This example demonstrates how to perform an Elliptic Curve Diffie-Hellman (ECDH) key exchange with public keys serialized into byte arrays (EncodedPoint). Check it out in the code at link:src/key_exchange.rs#90[src/key_exchange.rs].
+
+.Code Snippet
+[source,rust,linenums]
+include::src/key_exchange.rs[lines=90..115]
+
+
+==== 6.4) Key exchange using X25519 Key Exchange algorithm
+
+
+*X25519* is a specific elliptic curve Diffie-Hellman (ECDH) variant that is optimized for performance and security. It is designed to be more efficient and secure than traditional ECDH, and it is commonly used in modern protocols such as *TLS 1.3* and VPNs.
+
+*Key properties*:
+
+- *X25519* is an elliptic curve used specifically for Diffie-Hellman key exchange, offering strong security and high performance.
+- It is resistant to common attacks such as _side-channel attacks_ and provides fast key exchange.
+- *X25519* is designed for use in modern cryptographic systems requiring both high security and performance.
+
+*Rust coding example*:
+This example demonstrates how to perform key exchange using the X25519 algorithm with RustCrypto. Check it out in the code at link:src/key_exchange.rs#138[src/key_exchange.rs].
+
+.Code Snippet
+[source,rust,linenums]
+include::src/key_exchange.rs[lines=123..141]
+
+
+== Summary
+
+In this tutorial, we have explored the fundamental cryptographic operations in Rust using RustCrypto library. From basic hashing with SHA-256 to asymmetric encryption, digital signatures, and key exchange algorithms. We have seen how we can use Rust to implement secure and efficient cryptographic systems.
+
+The topics we have covered are:
+
+- *Hashing*: Secure ways to generate unique, fixed-length digests for data integrity.
+- *Password hashing* and *KDFs*: Using algorithms like *Argon2* to securely store passwords.
+- *Message Authentication*: Verifying the integrity and authenticity of messages with *HMAC*.
+- *Symmetric Encryption*: Protecting data confidentiality and integrity using *AES-256-GCM* and *ChaCha20-Poly1305*.
+- *Asymmetric Encryption*: Using *RSA* and *Ed25519* for confidentiality and digital signatures.
+- *Key Exchange*: Securely sharing secrets using Diffie-Hellman and Elliptic Curve Diffie-Hellman (*ECDH*).
+
+While we have focused on some of the core cryptographic primitives, it is important to note that the *RustCrypto* library offers a much broader range of cryptographic algorithms and features beyond what we have covered here. These topics represent just the foundational building blocks to get you started with cryptography in Rust.
+
+This tutorial is designed to be a quick reference for anyone stepping into the world of cryptography in Rust (just like me!). Whether you are building secure systems, working on encryption protocols, or simply diving into cryptography, I hope this guide provides you with the tools and knowledge to get started and experiment confidently.
 
 

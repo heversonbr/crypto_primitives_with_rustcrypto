@@ -62,32 +62,24 @@ pub fn check_integrity_example(){
 // Takes the shared secret key and message as input, and returns the HMAC in Hex format
 #[allow(dead_code)]
 fn generate_hmac(shared_key: &[u8], message: &[u8]) -> String {
-
     // Step 1: Initialize HMAC with the SHA-256 hash function using the shared secret key
     let mut mac = Hmac::<Sha256>::new_from_slice(shared_key).expect("HMAC can take a key of any size");   
-
     // Step 2: Update the HMAC with the message
     mac.update(message);  // Feeds the message into the HMAC instance
-
     // Step 3: Finalize the HMAC computation and get the result
     let mac_result = mac.finalize();  
-
     // Step 4: Convert the result into a byte array (Vec<u8>) and then into a hex-encoded string
     let result_in_bytes = mac_result.into_bytes();                    
     encode(result_in_bytes)  // Return the HMAC in hex format
 }
-
 // Function to verify the HMAC for a received message
 // Takes the shared secret key, the message to verify, and the received expected HMAC as input
 #[allow(dead_code)]
 fn verify_hmac(shared_key: &[u8], message_to_verify: &[u8], received_expected_hmac: &str) -> bool {   
-
     debug!("Received HMAC: {}", received_expected_hmac);
-
     // Step 1: Generate the computed HMAC for the received message using the shared secret key
     let computed_hmac = generate_hmac(shared_key, message_to_verify);
     debug!("Computed HMAC: {}", computed_hmac);
-
     // Step 2: Compare the computed HMAC with the received expected HMAC
     // If they match, the message is authentic and has not been altered
     computed_hmac == received_expected_hmac  // Return true if HMACs match, false otherwise
