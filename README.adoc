@@ -103,6 +103,7 @@ Why use a KDF instead of a simple hash like SHA-256?
 Argon2 is the recommended algorithm for password hashing, offering strong resistance to GPU-based attacks through its configurable time and memory costs.
 
 *Rust coding example*:
+
 See link:src/password_hashing_with_key_derivation_functions.rs#45[src/password_hashing_with_key_derivation_functions.rs] for an example of how to securely hash passwords using the argon2 crate from RustCrypto.
 
 .Code Snippet
@@ -130,8 +131,6 @@ HMAC (Hash-based Message Authentication Code) is used to verify both the integri
 - If the newly computed HMAC matches the received one, the message is verified.
 
 This ensures that the message has not been tampered with (integrity) and that it came from someone who knows the secret key (authenticity).
-
-link:src/message_authentication.rs[This example] shows how we can use RustCrypto to generate and verify a `HMAC`.
 
 *Rust coding example*:
 
@@ -229,6 +228,7 @@ NOTE: *Chosen-ciphertext attacks* (CCA) are a type of cryptographic attack where
 
 
 *Rust coding example*:
+
 Check the code at link:src/asymmetric_authenticated_encryption_example.rs#15[src/asymmetric_encryption_rsa_oaep.rs]. The example demonstrates how to use `RSA` with `OAEP` for encryption and decryption using RustCrypto.
 
 .Code Snippet
@@ -252,6 +252,7 @@ endif::[]
 - Digital signatures are widely used in software distribution, secure communications, and authentication systems.
 
 *Rust coding example*:
+
 This example demonstrates how to sign and verify messages using `RSA` and `PKCS1-v1_5` with RustCrypto. Check it out in the code at link:src/asymmetric_authenticated_encryption_example.rs#41[src/asymmetric_encryption_rsa_pkcs1_v15.rs].
 
 .Code Snippet
@@ -276,6 +277,7 @@ endif::[]
 - Digital signatures with *Ed25519* are commonly used in modern protocols, such as *SSH*, *TLS*, and cryptocurrency systems.
 
 *Rust coding example*:
+
 This example demonstrates how to use `Ed25519` (elliptic-curve) for digital signatures with RustCrypto. Check it out in the code at link:src/asymmetric_authenticated_encryption_example.rs#85[src/asymmetric_encryption_ed25519.rs].
 
 .Code Snippet
@@ -304,6 +306,7 @@ The *Diffie-Hellman* (DH) key exchange protocol allows two parties to generate a
 - This method can be used for both symmetric key encryption and secure communication.
 
 *Rust coding example*:
+
 This example demonstrates how to perform a key exchange using the traditional `Diffie-Hellman` (DH) algorithm with RustCrypto. Check it out in the code at link:src/key_exchange.rs#29[src/key_exchange.rs].
 
 .Code Snippet
@@ -328,6 +331,7 @@ Elliptic Curve Diffie-Hellman (ECDH) is a more efficient version of Diffie-Hellm
 - It is ideal for environments where performance and smaller key sizes are important (e.g., mobile devices, IoT).
 
 *Rust coding example*:
+
 This example demonstrates how to perform an `ECDH` key exchange using raw public keys without serialization. Check it out in the code at link:src/key_exchange.rs#72[src/key_exchange.rs].
 
 .Code Snippet
@@ -352,6 +356,7 @@ This variation of *ECDH* involves serializing the public keys into byte arrays (
 - This is the preferred method for many modern systems that require key exchange over untrusted networks.
 
 *Rust coding example*:
+
 This example demonstrates how to perform an Elliptic Curve Diffie-Hellman (`ECDH`) key exchange with public keys serialized into byte arrays (`EncodedPoint`). Check it out in the code at link:src/key_exchange.rs#90[src/key_exchange.rs].
 
 .Code Snippet
@@ -377,6 +382,7 @@ endif::[]
 - *X25519* is designed for use in modern cryptographic systems requiring both high security and performance.
 
 *Rust coding example*:
+
 This example demonstrates how to perform key exchange using the `X25519` algorithm with RustCrypto. Check it out in the code at link:src/key_exchange.rs#138[src/key_exchange.rs].
 
 .Code Snippet
