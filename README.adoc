@@ -17,13 +17,13 @@ Before diving in, it is important to choose the right cryptographic library base
 
 [cols="1,2,3", options="header"]
 |===
-| 🔧 Library        | 📝 Status                        | 🌟 Highlights
-| *rust-crypto*     | ❌ Largely unmaintained         | _Not suitable for new projects_
-| *ring*            | ✅ Actively maintained          | 
+|  Library          |  Status                       |  Highlights
+| *rust-crypto*     |  Largely unmaintained         | _Not suitable for new projects_
+| *ring*            |  Actively maintained          | 
 - High performance and security +
 - Based on BoringSSL primitives +
 - Production-ready for speed and safety
-| *RustCrypto*      | ✅ Actively maintained          | 
+| *RustCrypto*      |  Actively maintained          | 
 - Modular, pure Rust (no C FFI) +
 - Pick only the algorithms you need +
 - Safe, readable, and performant +
@@ -93,11 +93,11 @@ Why use a KDF instead of a simple hash like SHA-256?
 //|===
 [cols="^1,^1,^1", options="header"]
 |===
-| 🔍 Feature                | 🔐 SHA-256         | 🛡️ Argon2
-| ⚡ Speed                   | 🚀 Fast            | 🐢 Slow (by design)
-| 🧂 Uses Salt?             | ❌ No              | ✅ Yes
-| 🔐 Brute-force Resistant? | ❌ No              | ✅ Yes
-| 🎯 Recommended Use case   | General hashing    | Password hashing
+|  Feature                |  SHA-256         |  Argon2
+|  Speed                  |  Fast            |  Slow (by design)
+|  Uses Salt?             |  No              |  Yes
+|  Brute-force Resistant? |  No              |  Yes
+|  Recommended Use case   | General hashing  | Password hashing
 |===
 
 Argon2 is the recommended algorithm for password hashing, offering strong resistance to GPU-based attacks through its configurable time and memory costs.
